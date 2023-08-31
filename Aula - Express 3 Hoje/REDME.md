@@ -1,5 +1,0 @@
-createUser
-getAllUsers
-updateUser
-getUser
-deleteUser
