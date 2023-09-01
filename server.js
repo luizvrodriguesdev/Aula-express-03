@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import cors from "cors";
 
 const app = express();
 
@@ -20,6 +21,7 @@ const checkToken = (req, res, next) => {
   }
 };
 
+app.use(cors());
 app.use(express.json());
 
 // app.use("/api", checkToken, userRoutes);

@@ -1,8 +1,37 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
+import multer from "multer";
 dotenv.config();
 mongoose.connect(process.env.URI_MONGO);
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "image/png") {
+    cb(null, true);
+  } else {
+    cb(new Error("Formato não suportado"), false);
+  }
+};
+
+const FILE_TYPE_MAP = {
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+  "image/webp": "webp",
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const filename = file.originalname.replace(" ", "-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${filename}-${Date.now()}.${extension}`);
+  },
+});
+
+const upload = multer({ storage, fileFilter });
 
 const userSchema = new mongoose.Schema({
   name: { type: String, index: true },
@@ -34,7 +63,7 @@ const UserController = {
       if (Object.keys(err.keyValue)[0] === "username") {
         res.status(409).send("Username já cadastrado!");
       } else if (Object.keys(err.keyValue)[0] === "email") {
-        res.status(409).send("Email já cadastrado")
+        res.status(409).send("Email já cadastrado");
       }
     }
     res.status(201).send("User Created");
@@ -111,6 +140,15 @@ const UserController = {
     } catch (error) {
       res.status(500).send(error);
     }
+  },
+  uploadAvatar: async (req, res) => {
+    console.log("ENTREI AQUIII NO UPLOAD");
+    upload.single("avatar")(req, res, function (err) {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.status(200).json({ message: "Avatar enviado com sucesso!" });
+    });
   },
 };
 
